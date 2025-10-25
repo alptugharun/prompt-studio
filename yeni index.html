@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Alptuğ Harun – Prompt Studio</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0b0d10; --card:#0f1116; --muted:#9aa4b2; --text:#e6ebf2;
+    --brand1:#7c3aed; --brand2:#ec4899; --ring:#2a3240; --chip:#151a21;
+    --danger:#ef4444; --ok:#10b981;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    color:var(--text);
+    background:linear-gradient(180deg,#080a0d,#0b0d10 40%,#0b0d10);
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* butonlar */
+  .btn-ghost{background:transparent;border:1px solid var(--ring);border-radius:999px;color:var(--text);padding:6px 12px}
+  .btn-chip{border:1px solid var(--ring);background:var(--chip);color:#e5ecf6;border-radius:999px;padding:8px 14px;text-decoration:none}
+  .btn-follow{border:0;border-radius:999px;padding:10px 18px;color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand1));box-shadow:0 6px 24px rgba(124,58,237,.3);text-decoration:none}
+  .btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);border:0;color:#fff;border-radius:10px;padding:10px 14px;font-weight:600}
+  .btn-danger{background:linear-gradient(135deg,#ef4444,#f43f5e);border:0;color:#fff;border-radius:10px;padding:10px 14px;font-weight:600}
+
+  /* üst */
+  .container{max-width:1200px;margin:0 auto;padding:28px 20px}
+  .row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--ring);cursor:pointer}
+  .h-title{font-weight:600;letter-spacing:.2px}
+  .h-sub{color:#9fb3c8}
+  .pill{background:var(--chip);border:1px solid var(--ring);padding:6px 10px;border-radius:999px;color:#c9d6e6;font-size:13px}
+
+  /* form (admin-only) */
+  .panel{background:rgba(15,17,22,.65);border:1px solid var(--ring);border-radius:14px;padding:16px;margin-top:16px}
+  .input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--ring);background:#0c0f14;color:var(--text)}
+  .textarea{width:100%;min-height:140px;resize:vertical;padding:12px 14px;border-radius:10px;border:1px solid var(--ring);background:#0c0f14;color:var(--text)}
+  .grid-form{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+  @media (max-width:760px){ .grid-form{grid-template-columns:1fr} }
+  .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .file{display:inline-block;position:relative}
+  .file input{position:absolute;inset:0;opacity:0}
+  .note{color:var(--muted);font-size:12px}
+
+  /* grid */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:620px ){ .grid{grid-template-columns:1fr}}
+
+  .card{position:relative;background:var(--card);border:1px solid var(--ring);border-radius:14px;overflow:hidden;aspect-ratio:3/4;display:flex}
+  .card-img{width:100%;height:100%;object-fit:cover;transform:scale(1.0001);transition:transform .35s ease;will-change:transform}
+  .card:hover .card-img{ transform:scale(1.045) }
+
+  .grad{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,0) 52%,rgba(0,0,0,.45) 78%,rgba(0,0,0,.72) 100%)}
+  .top-tools{position:absolute;top:10px;right:10px;display:flex;gap:8px;z-index:3}
+  .tool{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(8,10,14,.9);border:1px solid var(--ring);color:#e8eef7;backdrop-filter:blur(6px);transition:transform .15s ease, background .15s ease, box-shadow .15s ease}
+  .tool:hover{transform:translateY(-1px);background:rgba(14,18,24,.95);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+  .tool svg{width:20px;height:20px}
+  .tool.danger:hover{box-shadow:0 0 0 3px rgba(239,68,68,.25)}
+
+  .card-meta{position:absolute;left:0;right:0;bottom:0;padding:14px 14px 12px;z-index:2;display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+  .title{font-weight:600}
+  .tags{color:#c9d6e6;font-size:12px;opacity:.9}
+  .chip-sm{border:1px solid var(--ring);background:rgba(23,27,34,.8);padding:6px 10px;border-radius:999px}
+
+  /* modallar */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:40}
+  .modal.show{display:flex}
+  .backdrop{position:absolute;inset:0;background:rgba(7,10,14,.72);backdrop-filter:blur(6px)}
+  .sheet{position:relative;z-index:1;width:min(840px,92vw);background:#0f1320;border:1px solid var(--ring);border-radius:16px;padding:18px}
+  .sheet h3{margin:0 0 2px;font-size:18px}
+  .sheet .muted{color:var(--muted);font-size:13px;margin-bottom:10px}
+  .sheet .bigimg{width:100%;max-height:60vh;object-fit:contain;border-radius:10px;border:1px solid var(--ring)}
+  .sheet .area{width:100%;min-height:140px;margin-top:12px;border-radius:12px;border:1px solid var(--ring);background:#0b0f16;color:var(--text);padding:12px}
+  .sheet .bar{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+  .sheet .x{position:absolute;top:8px;right:8px}
+  .sheet.small{width:min(480px,92vw)}
+  .rowf{display:grid;gap:8px}
+  .sheet label{font-size:13px;color:#cbd5e1}
+  .sheet input[type="password"], .sheet input[type="text"]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--ring);background:#0c0f14;color:#e6ebf2}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;border:1px solid var(--ring);color:#e6ebf2;padding:10px 14px;border-radius:10px;display:none;z-index:50}
+
+  /* admin görünürlüğü */
+  .admin-only{display:none}
+  body.is-admin .admin-only{display:block}
+  body.is-admin .tool.admin-only{display:grid}
+  .tool.admin-only{display:none}
+</style>
+</head>
+<body>
+
+  <header class="container">
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <img id="avatar" class="avatar" src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?q=80&w=256&auto=format&fit=crop" alt="">
+        <div>
+          <div class="h-title">Alptuğ Harun <span class="h-sub">– Prompt Studio</span></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <span class="pill admin-only">Yönetici: Açık 🔒</span>
+            <button id="logoutBtn" class="btn-ghost admin-only">Çıkış</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <a class="btn-chip" href="https://www.instagram.com/alptug.harun/" target="_blank" rel="noopener">Instagram</a>
+        <a class="btn-chip" href="https://www.tiktok.com/@alptugharun" target="_blank" rel="noopener">TikTok</a>
+        <a class="btn-chip" href="https://tr.pinterest.com/MiyaPaw/" target="_blank" rel="noopener">Pinterest</a>
+        <a class="btn-follow" href="https://www.instagram.com/alptug.harun/" target="_blank" rel="noopener">💜 Beni Takip Et</a>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL (ziyaretçiye gizli) -->
+    <div class="panel admin-only">
+      <div class="grid-form">
+        <input id="url" class="input" placeholder="Görsel URL (veya Dosya Seç ile yükle)">
+        <input id="title" class="input" placeholder="Başlık / İsim (ör. Parlak Mavi)">
+      </div>
+      <textarea id="prompt" class="textarea" placeholder="Tam istem (prompt) buraya"></textarea>
+      <div class="actions">
+        <label class="file btn-ghost">
+          <input id="file" type="file" accept="image/*"> Gözat…
+        </label>
+        <span class="note">Görseller S3/Sirv/Cloudflare R2 benzeri bir CDN’de barındırılmalı.</span>
+        <div style="flex:1"></div>
+        <button id="addBtn" class="btn-primary">Ekle</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="grid" class="grid"></section>
+  </main>
+
+  <!-- ÖNİZLEME -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="backdrop" data-close></div>
+    <div class="sheet">
+      <button class="tool x" data-close title="Kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <h3 id="mTitle">Başlık</h3>
+      <div class="muted">Önizleme</div>
+      <img id="mImg" class="bigimg" alt="">
+      <div style="height:8px"></div>
+      <div class="muted">İstem (prompt)</div>
+      <textarea id="mPrompt" class="area" readonly></textarea>
+      <div class="bar">
+        <button id="copyModal" class="btn-ghost">İstemi kopyala</button>
+        <button class="btn-primary" data-close>Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GİRİŞ (gizli) -->
+  <div id="loginModal" class="modal" aria-hidden="true">
+    <div class="backdrop" data-close></div>
+    <div class="sheet small">
+      <button class="tool x" data-close title="Kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <h3>Yönetici Girişi</h3>
+      <div class="rowf" style="margin-top:8px">
+        <label>Parola</label>
+        <input id="pass" type="password" placeholder="••••••••">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button id="loginBtn" class="btn-primary">Giriş Yap</button>
+        <button class="btn-ghost" data-close>İptal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DÜZENLE -->
+  <div id="editModal" class="modal" aria-hidden="true">
+    <div class="backdrop" data-close></div>
+    <div class="sheet small">
+      <button class="tool x" data-close title="Kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <h3>Görseli Düzenle</h3>
+      <div class="rowf" style="margin-top:8px">
+        <label>Başlık</label>
+        <input id="eTitle" type="text">
+        <label>Görsel URL</label>
+        <input id="eUrl" type="text">
+        <label>İstem (prompt)</label>
+        <textarea id="ePrompt" class="textarea" style="min-height:100px"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button id="saveEdit" class="btn-primary">Kaydet</button>
+        <button class="btn-ghost" data-close>İptal</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Kopyalandı!</div>
+
+<script>
+/* ------------ Kalıcı veri (localStorage) ------------- */
+const LS_KEY = 'ah.prompts';
+function loadData(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(raw){ try{ return JSON.parse(raw);}catch{} }
+  // ilk kurulum: 18 demo
+  return Array.from({length:18}).map((_,i)=>({
+    id:'demo-'+(i+1),
+    title:[
+      'Moda Stüdyo','Portre','Kütüphane Işığı','Londra – Big Ben','Havuz Masası',
+      'Minimal Turuncu','Sokak Kapısı','Kafe Portre','Çift Portre',
+      'Stüdyo – Cyan','Vintage Kütüphane','Yumuşak Işık','Şehir Yürüyüşü',
+      'Sıcak Tonlar','Soğuk Tonlar','Geniş Açı','Tele Lens','Pastel Gün'
+    ][i],
+    url:`https://picsum.photos/seed/p${i+1}/800/1067`, /* sabit 3:4 */
+    prompt:`Düz arka plan, 35mm, f/2.0, sinematik ışık, yüksek detay, editorial, derinlik algısı. Örnek #${i+1}.`,
+    tags:['travel','genz','editorial','antalya','floating map']
+  }));
+}
+function saveData(){ localStorage.setItem(LS_KEY, JSON.stringify(DATA)); }
+let DATA = loadData();
+
+/* ------------ yardımcılar ------------ */
+const $ = s=>document.querySelector(s);
+const grid = $('#grid');
+function toast(msg='Kopyalandı!'){ const t=$('#toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toast._tm); toast._tm=setTimeout(()=>t.style.display='none',1200); }
+function copyText(text){
+  navigator.clipboard?.writeText(text).then(()=>toast()).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove(); toast();
+  });
+}
+
+/* ------------- kartlar -------------- */
+function cardHTML({id,title,url,prompt,tags}){
+  const tagLine = tags?.slice(0,3).map(t=>`#${t}`).join(' ');
+  return `
+  <article class="card" data-id="${id}">
+    <img class="card-img" src="${url}" alt="${title}"
+         onerror="this.src='https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=1200&auto=format&fit=crop'">
+    <div class="grad"></div>
+    <div class="top-tools">
+      <button class="tool" data-preview title="Önizleme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+      </button>
+      <button class="tool" data-copy title="İstemi kopyala" data-prompt="${encodeURIComponent(prompt)}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2"/></svg>
+      </button>
+      <button class="tool admin-only" data-edit title="Düzenle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="tool admin-only danger" data-del title="Sil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-width="2"/><line x1="10" y1="11" x2="10" y2="17" stroke-width="2"/><line x1="14" y1="11" x2="14" y2="17" stroke-width="2"/></svg>
+      </button>
+    </div>
+    <div class="card-meta">
+      <div><div class="title">${title}</div><div class="tags">${tagLine??''}</div></div>
+      <span class="chip-sm">Alptuğ Harun</span>
+    </div>
+  </article>`;
+}
+function render(){ grid.innerHTML = DATA.map(cardHTML).join(''); }
+render();
+
+/* kart click */
+grid.addEventListener('click', e=>{
+  const btn=e.target.closest('.tool'); if(!btn) return;
+  const card=e.target.closest('.card'); const id=card?.dataset.id; const item=DATA.find(x=>x.id===id);
+  if(!item) return;
+
+  if(btn.hasAttribute('data-preview')) openPreview(item);
+  if(btn.hasAttribute('data-copy')) copyText(decodeURIComponent(btn.dataset.prompt));
+  if(btn.hasAttribute('data-del')){
+    if(confirm('Bu görseli silmek istediğine emin misin?')){
+      DATA = DATA.filter(x=>x.id!==id); saveData(); render(); toast('Silindi');
+    }
+  }
+  if(btn.hasAttribute('data-edit')){ openEdit(item); }
+});
+
+/* --------- Önizleme --------- */
+const modal=$('#modal'), mTitle=$('#mTitle'), mImg=$('#mImg'), mPrompt=$('#mPrompt');
+function openPreview({title,url,prompt}){ mTitle.textContent=title; mImg.src=url; mPrompt.value=prompt; modal.classList.add('show'); }
+function closeModal(){ modal.classList.remove('show'); }
+modal.addEventListener('click', e=>{ if(e.target.hasAttribute('data-close')) closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ document.querySelectorAll('.modal').forEach(m=>m.classList.remove('show')); } });
+$('#copyModal').addEventListener('click', ()=>copyText(mPrompt.value));
+
+/* --------- Ekle (admin panel) ---------- */
+const file=$('#file'), urlIn=$('#url');
+file?.addEventListener('change', ()=>{
+  const f=file.files?.[0]; if(!f) return;
+  const r=new FileReader(); r.onload=()=>{ urlIn.value=r.result }; r.readAsDataURL(f);
+});
+$('#addBtn')?.addEventListener('click', ()=>{
+  const u=urlIn.value.trim(), t=$('#title').value.trim()||'Adsız', p=$('#prompt').value.trim()||'—';
+  if(!u){ alert('Lütfen bir görsel URL’i seçin/yükleyin.'); return; }
+  DATA.unshift({id:'id-'+Date.now(), title:t, url:u, prompt:p, tags:['custom','genz','editorial']});
+  saveData(); render(); urlIn.value=''; $('#title').value=''; $('#prompt').value=''; toast('Eklendi!'); window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* --------- Düzenle (admin) ---------- */
+const editModal=$('#editModal'); let EDIT_ID=null;
+function openEdit(item){
+  EDIT_ID=item.id; $('#eTitle').value=item.title; $('#eUrl').value=item.url; $('#ePrompt').value=item.prompt;
+  editModal.classList.add('show');
+}
+editModal.addEventListener('click', e=>{ if(e.target.hasAttribute('data-close')) editModal.classList.remove('show'); });
+$('#saveEdit')?.addEventListener('click', ()=>{
+  const i = DATA.findIndex(x=>x.id===EDIT_ID); if(i<0) return;
+  DATA[i].title=$('#eTitle').value.trim()||'Adsız';
+  DATA[i].url=$('#eUrl').value.trim()||DATA[i].url;
+  DATA[i].prompt=$('#ePrompt').value.trim()||'—';
+  saveData(); render(); editModal.classList.remove('show'); toast('Kaydedildi');
+});
+
+/* --------- Admin giriş/çıkış ---------- */
+/* Parola: alptugH90.07*  -> SHA-256: 8ca61c0fff3a687bab086cba5cb66803f8c2089b95538a7f4814b03ef07f405f */
+const ADMIN_HASH='8ca61c0fff3a687bab086cba5cb66803f8c2089b95538a7f4814b03ef07f405f';
+async function sha256(t){ const enc=new TextEncoder().encode(t); const buf=await crypto.subtle.digest('SHA-256',enc); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function setAdmin(on){ if(on){localStorage.setItem('admin','1');document.body.classList.add('is-admin');} else {localStorage.removeItem('admin');document.body.classList.remove('is-admin');} }
+if(localStorage.getItem('admin')==='1'){ document.body.classList.add('is-admin'); }
+
+const loginModal=$('#loginModal');
+function openLogin(){ loginModal.classList.add('show'); $('#pass')?.focus(); }
+loginModal.addEventListener('click', e=>{ if(e.target.hasAttribute('data-close')) loginModal.classList.remove('show'); });
+$('#loginBtn')?.addEventListener('click', async ()=>{
+  const val=($('#pass')?.value||'').trim(); if(!val) return;
+  const ok=(await sha256(val))===ADMIN_HASH;
+  if(ok){ setAdmin(true); loginModal.classList.remove('show'); toast('Yönetici modu açık'); }
+  else{ toast('Hatalı parola'); }
+});
+$('#logoutBtn')?.addEventListener('click', ()=>{ setAdmin(false); toast('Çıkış yapıldı'); });
+
+/* Gizli giriş: avatar'a 10 tık (5 sn içinde), ayrıca Shift+Alt+A kısayolu */
+(() => {
+  const avatar = document.querySelector('#avatar');
+  if (!avatar) return;
+  let clicks = 0;
+  let timer = null;
+  avatar.addEventListener('click', () => {
+    clicks++;
+    if (!timer) {
+      timer = setTimeout(() => { clicks = 0; timer = null; }, 5000);
+    }
+    if (clicks >= 10) {
+      clicks = 0;
+      clearTimeout(timer); timer = null;
+      openLogin();
+    }
+  });
+})();
+document.addEventListener('keydown', e=>{ if(e.shiftKey&&e.altKey&&e.key.toLowerCase()==='a') openLogin(); });
+</script>
+</body>
+</html>
