@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://alptugharunprompt.netlify.app/sitemap.xml
